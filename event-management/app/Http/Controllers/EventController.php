@@ -8,6 +8,28 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    // ახალი home მეთოდი - დაამატე აქ
+    public function home()
+    {
+        $featured_events = Event::with(['organizer', 'categories'])
+            ->where('status', 'published')
+            ->where('start_date', '>', now())
+            ->where('is_featured', true) // თუ გაქვს is_featured ველი
+            ->orderBy('start_date', 'asc')
+            ->take(6)
+            ->get();
+
+        // თუ is_featured ველი არ გაქვს, გამოიყენე ეს:
+        // $featured_events = Event::with(['organizer', 'categories'])
+        //     ->where('status', 'published')
+        //     ->where('start_date', '>', now())
+        //     ->latest('created_at')
+        //     ->take(6)
+        //     ->get();
+
+        return view('welcome', compact('featured_events'));
+    }
+
     public function index(Request $request)
     {
         $query = Event::with(['organizer', 'categories'])
