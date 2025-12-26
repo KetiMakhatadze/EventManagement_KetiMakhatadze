@@ -1,30 +1,56 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ParticipantController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Models\Event;
 
 // მთავარი გვერდი
-Route::get('/', [EventController::class, 'home'])->name('home');
+Route::get('/', function () {
+    $featured_events = Event::where('status', 'published')
+        ->latest('start_date')
+        ->take(6)
+        ->get();
+    return view('welcome', compact('featured_events'));
+})->name('home');
 
-// ღონისძიებები
+// Authentication Routes
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
+
+// Public Event Routes
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
 
-// ავტორიზაცია
-Route::get('/login', function() { return view('auth.login'); })->name('login');
-Route::get('/register', function() { return view('auth.register'); })->name('register');
-Route::post('/logout', function() { 
-    auth()->logout(); 
-    return redirect('/'); 
-})->name('logout');
-
-// დაჯავშნები (ავტორიზებული)
+// Booking Routes (Auth Required)
 Route::middleware('auth')->group(function () {
-    Route::get('/my-bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/events/{event}/book', [BookingController::class, 'create'])->name('bookings.create');
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+    Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('bookings.my');
 });
 
-// ადმინი (ავტორიზებული)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin', function() { return view('admin.dashboard'); })->name('admin.dashboard');
+// Participant Check-in
+Route::get('/checkin/{id}', [ParticipantController::class, 'checkIn'])->name('participants.checkin');
+
+// Admin Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    Route::resource('events', AdminEventController::class);
+    Route::resource('categories', CategoryController::class);
+    Route::resource('bookings', AdminBookingController::class)->only(['index', 'show', 'destroy']);
+    
+    Route::get('/participants', [ParticipantController::class, 'list'])->name('participants.index');
 });

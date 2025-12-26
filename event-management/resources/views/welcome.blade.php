@@ -44,7 +44,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="/">
+            <a class="navbar-brand" href="{{ url('/') }}">
                 <i class="fas fa-calendar-alt"></i> EventHub
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -53,25 +53,25 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/">მთავარი</a>
+                        <a class="nav-link active" href="{{ url('/') }}">მთავარი</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/">ღონისძიებები</a>
+                        <a class="nav-link" href="{{ url('/events') }}">ღონისძიებები</a>
                     </li>
                     @guest
                         <li class="nav-item">
-                            <a class="nav-link" href="/">შესვლა</a>
+                            <a class="nav-link" href="{{ url('/login') }}">შესვლა</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn btn-primary text-white px-3" href="/">რეგისტრაცია</a>
+                            <a class="nav-link btn btn-primary text-white px-3 ms-2" href="{{ url('/register') }}">რეგისტრაცია</a>
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link" href="/">ჩემი დაჯავშნები</a>
+                            <a class="nav-link" href="{{ url('/my-bookings') }}">ჩემი დაჯავშნები</a>
                         </li>
-                        @if(auth()->user()->isAdmin() || auth()->user()->isOrganizer())
+                        @if(auth()->user()->role === 'admin' || auth()->user()->role === 'organizer')
                             <li class="nav-item">
-                                <a class="nav-link" href="/">ადმინ პანელი</a>
+                                <a class="nav-link" href="{{ url('/admin/dashboard') }}">ადმინ პანელი</a>
                             </li>
                         @endif
                         <li class="nav-item dropdown">
@@ -80,11 +80,11 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <a class="dropdown-item" href="#"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                         <i class="fas fa-sign-out-alt"></i> გასვლა
                                     </a>
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    <form id="logout-form" action="{{ url('/logout') }}" method="POST" class="d-none">
                                         @csrf
                                     </form>
                                 </li>
